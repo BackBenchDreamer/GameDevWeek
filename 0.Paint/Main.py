@@ -15,13 +15,18 @@ def square(start, end):
     up()
     goto(start.x, start.y)
     down()
-
-
+    begin_fill()
+    goto(end.x, start.y)
+    goto(end.x, end.y)
+    goto(start.x, end.y)
+    goto(start.x, start.y)
 
 def circle(start, end):
     up()
     goto(start.x, start.y)
-
+    down()
+    begin_fill()
+    
 
 
 def rectangle(start, end):
