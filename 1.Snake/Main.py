@@ -77,11 +77,12 @@ class Snake:
         x, y = self.direction
         new = (((cur[0] + (x * GRID_SIZE)) % SCREEN_WIDTH), (cur[1] + (y * GRID_SIZE)) % SCREEN_HEIGHT)
         if len(self.positions) > 2 and new in self.positions[2:]:
-            self.reset()
+            return False
         else:
             self.positions.insert(0, new)
             if len(self.positions) > self.length:
                 self.positions.pop()
+            return True
 
     def reset(self):
         self.length = 1
@@ -175,7 +176,9 @@ def main_game(screen, clock, snake, apple, mega_apple, high_score):
                 sys.exit()
 
         snake.handle_keys()
-        snake.move()
+        if not snake.move():
+            defeat_screen(screen, clock, snake, high_score)
+            return  # Exit the game loop
 
         # Check collision with apple
         if snake.get_head_position() == apple.position:
@@ -198,6 +201,7 @@ def main_game(screen, clock, snake, apple, mega_apple, high_score):
         # Check collision with self
         if snake.get_head_position() in snake.positions[1:]:
             defeat_screen(screen, clock, snake, high_score)
+            return  # Exit the game loop
 
         # Draw everything
         screen.fill(BLACK)
@@ -218,8 +222,7 @@ def defeat_screen(screen, clock, snake, high_score):
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if restart_button_rect.collidepoint(event.pos):
-                    snake.reset()
-                    main_game(screen, clock, snake, Apple(), None, high_score)
+                    return  # Return to main_game loop
                 elif quit_button_rect.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
