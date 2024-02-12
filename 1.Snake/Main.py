@@ -18,7 +18,7 @@ SNAKE_SPEED = 10
 MAX_SPEED = 20
 MEGA_APPLE_CHANCE = 0.1
 MEGA_APPLE_DURATION = 5 * FPS  # 5 seconds
-FONT_NAME = pygame.font.match_font('arial')
+FONT_NAME = pygame.font.match_font('Comic Sans MS')
 
 # Directions
 UP = (0, -1)
@@ -244,3 +244,4 @@ def defeat_screen(screen, clock, snake, high_score):
 
 if __name__ == "__main__":
     main()
+    
