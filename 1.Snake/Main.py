@@ -31,9 +31,9 @@ pygame.init()
 pygame.display.set_caption("Snake Game")
 
 # Fonts
-def draw_text(surf, text, size, x, y):
+def draw_text(surf, text, size, x, y, color=WHITE):
     font = pygame.font.Font(FONT_NAME, size)
-    text_surface = font.render(text, True, WHITE)
+    text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
@@ -141,6 +141,7 @@ def main():
     snake = Snake()
     apple = Apple()
     mega_apple = None
+    high_score = 0
 
     # Main loop
     while True:
@@ -150,7 +151,8 @@ def main():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_button_rect.collidepoint(event.pos):
-                    main_game(screen, clock, snake, apple, mega_apple)
+                    snake.reset()
+                    main_game(screen, clock, snake, apple, mega_apple, high_score)
 
         screen.fill(BLACK)
         draw_text(screen, "Snake Game", 64, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4)
@@ -158,10 +160,13 @@ def main():
         pygame.draw.rect(screen, GREEN, start_button_rect)
         draw_text(screen, "Start", 36, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 10)
 
+        # Display high score
+        draw_text(screen, f"High Score: {high_score}", 18, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50)
+
         pygame.display.flip()
         clock.tick(FPS)
 
-def main_game(screen, clock, snake, apple, mega_apple):
+def main_game(screen, clock, snake, apple, mega_apple, high_score):
     running = True
     while running:
         for event in pygame.event.get():
@@ -176,6 +181,8 @@ def main_game(screen, clock, snake, apple, mega_apple):
         if snake.get_head_position() == apple.position:
             snake.length += 1
             snake.score += 1
+            if snake.score > high_score:
+                high_score = snake.score
             snake.increase_speed()
             apple = Apple()
             if random.random() < MEGA_APPLE_CHANCE:
@@ -184,7 +191,13 @@ def main_game(screen, clock, snake, apple, mega_apple):
         # Check collision with mega apple
         if mega_apple and snake.get_head_position() == mega_apple.position:
             snake.score += 5
+            if snake.score > high_score:
+                high_score = snake.score
             mega_apple = None
+
+        # Check collision with self
+        if snake.get_head_position() in snake.positions[1:]:
+            defeat_screen(screen, clock, snake, high_score)
 
         # Draw everything
         screen.fill(BLACK)
@@ -193,8 +206,38 @@ def main_game(screen, clock, snake, apple, mega_apple):
         if mega_apple:
             mega_apple.draw(screen)
         draw_text(screen, f"Score: {snake.score}", 18, 100, 10)
+        draw_text(screen, f"High Score: {high_score}", 18, SCREEN_WIDTH - 100, 10)
         pygame.display.flip()
         clock.tick(snake.speed)
+
+def defeat_screen(screen, clock, snake, high_score):
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if restart_button_rect.collidepoint(event.pos):
+                    snake.reset()
+                    main_game(screen, clock, snake, Apple(), None, high_score)
+                elif quit_button_rect.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+
+        screen.fill(BLACK)
+        draw_text(screen, "Game Over!", 64, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4)
+        draw_text(screen, f"Score: {snake.score}", 36, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        draw_text(screen, "Click to restart", 24, SCREEN_WIDTH / 2, SCREEN_HEIGHT * 3 / 4)
+        draw_text(screen, "or", 24, SCREEN_WIDTH / 2, SCREEN_HEIGHT * 3 / 4 + 30)
+        draw_text(screen, "Quit", 24, SCREEN_WIDTH / 2, SCREEN_HEIGHT * 3 / 4 + 60)
+
+        restart_button_rect = pygame.Rect(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT * 3 / 4, 100, 30)
+        quit_button_rect = pygame.Rect(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT * 3 / 4 + 60, 100, 30)
+        pygame.draw.rect(screen, GREEN, restart_button_rect, 2)
+        pygame.draw.rect(screen, GREEN, quit_button_rect, 2)
+
+        pygame.display.flip()
+        clock.tick(FPS)
 
 if __name__ == "__main__":
     main()
