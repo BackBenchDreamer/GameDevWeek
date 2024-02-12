@@ -97,19 +97,15 @@ class Snake:
             pygame.draw.rect(surface, BLACK, r, 1)
 
     def handle_keys(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.turn(UP)
-                elif event.key == pygame.K_DOWN:
-                    self.turn(DOWN)
-                elif event.key == pygame.K_LEFT:
-                    self.turn(LEFT)
-                elif event.key == pygame.K_RIGHT:
-                    self.turn(RIGHT)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            self.turn(UP)
+        elif keys[pygame.K_DOWN]:
+            self.turn(DOWN)
+        elif keys[pygame.K_LEFT]:
+            self.turn(LEFT)
+        elif keys[pygame.K_RIGHT]:
+            self.turn(RIGHT)
 
     def increase_speed(self):
         if self.speed < MAX_SPEED:
