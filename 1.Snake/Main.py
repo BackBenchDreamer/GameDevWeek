@@ -15,8 +15,10 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 FPS = 10
 SNAKE_SPEED = 10
+MAX_SPEED = 20
 MEGA_APPLE_CHANCE = 0.1
 MEGA_APPLE_DURATION = 5 * FPS  # 5 seconds
+FONT_NAME = pygame.font.match_font('arial')
 
 # Directions
 UP = (0, -1)
@@ -29,22 +31,27 @@ pygame.init()
 pygame.display.set_caption("Snake Game")
 
 # Fonts
-font = pygame.font.Font(None, 36)
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.Font(FONT_NAME, size)
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 
 # Functions
-def draw_text(surface, text, color, x, y):
-    text_surface = font.render(text, True, color)
-    surface.blit(text_surface, (x, y))
-
-def spawn_apple():
-    return (random.randint(0, GRID_WIDTH - 1) * GRID_SIZE, random.randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-
 def draw_grid(surface):
     for y in range(0, SCREEN_HEIGHT, GRID_SIZE):
         for x in range(0, SCREEN_WIDTH, GRID_SIZE):
             rect = pygame.Rect(x, y, GRID_SIZE, GRID_SIZE)
             pygame.draw.rect(surface, (40, 40, 40), rect)
             pygame.draw.rect(surface, BLACK, rect, 1)
+
+def spawn_apple(snake):
+    while True:
+        x = random.randrange(GRID_WIDTH)
+        y = random.randrange(GRID_HEIGHT)
+        if (x, y) not in snake:
+            return (x * GRID_SIZE, y * GRID_SIZE)
 
 # Snake class
 class Snake:
@@ -105,23 +112,23 @@ class Snake:
                     self.turn(RIGHT)
 
     def increase_speed(self):
-        self.speed += 1
+        if self.speed < MAX_SPEED:
+            self.speed += 1
 
 # Apple class
 class Apple:
     def __init__(self):
-        self.position = spawn_apple()
-        self.color = RED
+        self.position = spawn_apple([]) # Initialize with empty snake
 
     def draw(self, surface):
         r = pygame.Rect((self.position[0], self.position[1]), (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(surface, self.color, r)
+        pygame.draw.rect(surface, RED, r)
         pygame.draw.rect(surface, BLACK, r, 1)
 
 # MegaApple class
 class MegaApple:
     def __init__(self):
-        self.position = spawn_apple()
+        self.position = spawn_apple([])
         self.color = BLUE
         self.duration = MEGA_APPLE_DURATION
 
@@ -139,14 +146,34 @@ def main():
     apple = Apple()
     mega_apple = None
 
+    # Main loop
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if start_button_rect.collidepoint(event.pos):
+                    main_game(screen, clock, snake, apple, mega_apple)
+
+        screen.fill(BLACK)
+        draw_text(screen, "Snake Game", 64, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4)
+        start_button_rect = pygame.Rect(SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, 100, 50)
+        pygame.draw.rect(screen, GREEN, start_button_rect)
+        draw_text(screen, "Start", 36, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 10)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+def main_game(screen, clock, snake, apple, mega_apple):
     running = True
     while running:
-        screen.fill(WHITE)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-        # Event handling
         snake.handle_keys()
-
-        # Snake movement
         snake.move()
 
         # Check collision with apple
@@ -163,19 +190,14 @@ def main():
             snake.score += 5
             mega_apple = None
 
-        # Draw snake, apple, and mega apple
+        # Draw everything
+        screen.fill(BLACK)
         snake.draw(screen)
         apple.draw(screen)
         if mega_apple:
             mega_apple.draw(screen)
-
-        # Draw score
-        draw_text(screen, f"Score: {snake.score}", BLACK, 10, 10)
-
-        # Update screen
+        draw_text(screen, f"Score: {snake.score}", 18, 100, 10)
         pygame.display.flip()
-
-        # Control the frame rate
         clock.tick(snake.speed)
 
 if __name__ == "__main__":
