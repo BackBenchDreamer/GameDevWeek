@@ -16,6 +16,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong")
 
 clock = pygame.time.Clock() 
+#30FPS seem to work the best!
 FPS = 30
 
 # Striker class
@@ -31,13 +32,13 @@ class Striker:
 		self.speed = speed
 		self.color = color
 		# Rect that is used to control the position and collision of the object
-		self.geekRect = pygame.Rect(posx, posy, width, height)
+		self.playerRect = pygame.Rect(posx, posy, width, height)
 		# Object that is blit on the screen
-		self.geek = pygame.draw.rect(screen, self.color, self.geekRect)
+		self.player = pygame.draw.rect(screen, self.color, self.playerRect)
 
 	# Used to display the object on the screen
 	def display(self):
-		self.geek = pygame.draw.rect(screen, self.color, self.geekRect)
+		self.player = pygame.draw.rect(screen, self.color, self.playerRect)
 
 	def update(self, yFac):
 		self.posy = self.posy + self.speed*yFac
@@ -50,7 +51,7 @@ class Striker:
 			self.posy = HEIGHT-self.height
 
 		# Updating the rect with the new values
-		self.geekRect = (self.posx, self.posy, self.width, self.height)
+		self.playerRect = (self.posx, self.posy, self.width, self.height)
 
 	def displayScore(self, text, score, x, y, color):
 		text = font20.render(text+str(score), True, color)
@@ -60,7 +61,7 @@ class Striker:
 		screen.blit(text, textRect)
 
 	def getRect(self):
-		return self.geekRect
+		return self.playerRect
 
 # Ball class
 
@@ -121,15 +122,15 @@ def main():
 	running = True
 
 	# Defining the objects
-	geek1 = Striker(20, 0, 10, 100, 10, GREEN)
-	geek2 = Striker(WIDTH-30, 0, 10, 100, 10, GREEN)
+	player1 = Striker(20, 0, 10, 100, 10, GREEN)
+	player2 = Striker(WIDTH-30, 0, 10, 100, 10, GREEN)
 	ball = Ball(WIDTH//2, HEIGHT//2, 7, 7, WHITE)
 
-	listOfGeeks = [geek1, geek2]
+	listOfplayers = [player1, player2]
 
 	# Initial parameters of the players
-	geek1Score, geek2Score = 0, 0
-	geek1YFac, geek2YFac = 0, 0
+	player1Score, player2Score = 0, 0
+	player1YFac, player2YFac = 0, 0
 
 	while running:
 		screen.fill(BLACK)
@@ -140,36 +141,36 @@ def main():
 				running = False
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_UP:
-					geek2YFac = -1
+					player2YFac = -1
 				if event.key == pygame.K_DOWN:
-					geek2YFac = 1
+					player2YFac = 1
 				if event.key == pygame.K_w:
-					geek1YFac = -1
+					player1YFac = -1
 				if event.key == pygame.K_s:
-					geek1YFac = 1
+					player1YFac = 1
 			if event.type == pygame.KEYUP:
 				if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-					geek2YFac = 0
+					player2YFac = 0
 				if event.key == pygame.K_w or event.key == pygame.K_s:
-					geek1YFac = 0
+					player1YFac = 0
 
 		# Collision detection
-		for geek in listOfGeeks:
-			if pygame.Rect.colliderect(ball.getRect(), geek.getRect()):
+		for player in listOfplayers:
+			if pygame.Rect.colliderect(ball.getRect(), player.getRect()):
 				ball.hit()
 
 		# Updating the objects
-		geek1.update(geek1YFac)
-		geek2.update(geek2YFac)
+		player1.update(player1YFac)
+		player2.update(player2YFac)
 		point = ball.update()
 
-		# -1 -> Geek_1 has scored
-		# +1 -> Geek_2 has scored
+		# -1 -> Player1 has scored
+		# +1 -> Player2 has scored
 		# 0 -> None of them scored
 		if point == -1:
-			geek1Score += 1
+			player1Score += 1
 		elif point == 1:
-			geek2Score += 1
+			player2Score += 1
 
 		# Someone has scored
 		# a point and the ball is out of bounds.
@@ -178,15 +179,15 @@ def main():
 			ball.reset()
 
 		# Displaying the objects on the screen
-		geek1.display()
-		geek2.display()
+		player1.display()
+		player2.display()
 		ball.display()
 
 		# Displaying the scores of the players
-		geek1.displayScore("Player_1 : ", 
-						geek1Score, 100, 20, WHITE)
-		geek2.displayScore("Player_2 : ", 
-						geek2Score, WIDTH-100, 20, WHITE)
+		player1.displayScore("Player_1 : ", 
+						player1Score, 100, 20, WHITE)
+		player2.displayScore("Player_2 : ", 
+						player2Score, WIDTH-100, 20, WHITE)
 
 		pygame.display.update()
 		clock.tick(FPS)	 
